@@ -83,8 +83,10 @@ public class SecurityConfig {
                         .requestMatchers("/admin").hasRole("ADMIN") //admin이라는 권한을 가진 사용자만 접근 가능
                         .anyRequest().authenticated()); //로그인 한 사용자만 접근 가능
         http
+                //JWTFilter 등록
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         http
+                // UsernamePasswordAuthenticationFilter을 대체해서 LoginFilter를 만든 것이니까 해당 자리에 넣을 수 있도록 addFilterAt
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
         //세션 설정 (STATELESS 상태)
         http

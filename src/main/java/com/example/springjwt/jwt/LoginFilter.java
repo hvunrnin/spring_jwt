@@ -32,7 +32,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String username = obtainUsername(request);
         String password = obtainPassword(request);
 
-        // spring security에서 username과 password를 검증하기 위해서 token에 담아야 됨
+        // spring security에서 username과 password를 검증하기 위해서 token에 담아야 됨 (=authenticationManager에게 넘겨줄 바구니 역할)
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);
 
         // token에 담은 검증을 위헤 AuthenticationManager로 전달
@@ -42,16 +42,20 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication)  {
 
+        // user 객체 알아내기
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
+        // username 값 뽑기
         String username = customUserDetails.getUsername();
 
+        // role 값 뽑기
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
 
         String role = auth.getAuthority();
 
+        // 뽑아낸 username, role값 갖고 JWT Util에 Token 만들어달라고 전달
         String token = jwtUtil.createJwt(username, role, 60*60*10L);
 
         response.addHeader("Authorization", "Bearer " + token);

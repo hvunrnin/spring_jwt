@@ -20,6 +20,7 @@ public class JWTUtil {
 
     }
 
+    // 검증 메소드
     public String getUsername(String token) {
 
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("username", String.class);
@@ -35,6 +36,7 @@ public class JWTUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
 
+    // 생성 메소드
     public String createJwt(String username, String role, Long expiredMs) {
 
         return Jwts.builder()
@@ -42,7 +44,7 @@ public class JWTUtil {
                 .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis())) // 생성 시작
                 .expiration(new Date(System.currentTimeMillis() + expiredMs)) // 토큰 expire 시간
-                .signWith(secretKey)
+                .signWith(secretKey) // 암호화 진행
                 .compact();
     }
 }
