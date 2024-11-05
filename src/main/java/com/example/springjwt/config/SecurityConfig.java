@@ -3,6 +3,7 @@ package com.example.springjwt.config;
 import com.example.springjwt.jwt.JWTFilter;
 import com.example.springjwt.jwt.JWTUtil;
 import com.example.springjwt.jwt.LoginFilter;
+import com.example.springjwt.repository.RefreshRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,10 +27,12 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
+    private final RefreshRepository refreshRepository;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, RefreshRepository refreshRepository) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
+        this.refreshRepository = refreshRepository;
     }
 
     @Bean
@@ -81,13 +84,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth)->auth
                         .requestMatchers("/login","/","/join").permitAll() //모두 허용
                         .requestMatchers("/admin").hasRole("ADMIN") //admin이라는 권한을 가진 사용자만 접근 가능
+                        .requestMatchers("/reissue").permitAll()
                         .anyRequest().authenticated()); //로그인 한 사용자만 접근 가능
         http
                 //JWTFilter 등록
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         http
                 // UsernamePasswordAuthenticationFilter을 대체해서 LoginFilter를 만든 것이니까 해당 자리에 넣을 수 있도록 addFilterAt
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshRepository), UsernamePasswordAuthenticationFilter.class);
         //세션 설정 (STATELESS 상태)
         http
                 .sessionManagement((session)->session
